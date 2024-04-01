@@ -42,12 +42,29 @@ class Server:
         return self.__dataset
 
     def get_page(self, page: int = 1, page_size: int = 10) -> List[List]:
+        """
+        Retrieve a specific page of data from the dataset.
+
+        Args:
+            page (int, optional): The page number to retrieve. Defaults to 1.
+            page_size (int, optional): The number of items per page.
+                                    Defaults to 10.
+
+        Returns:
+            List[List]: The data for the specified page.
+
+        Raises:
+            AssertionError: If `page` is not a positive integer or
+                `page_size` is not a positive integer.
+        """
         assert isinstance(page, int) and page > 0, "page must \
                 be an integer greater than 0"
-        assert isinstance(page_size, int) and page_size > 0, "page_size must \
-                be an integer greater than 0"
+        assert isinstance(page_size, int) and page_size > 0, "page_size \
+                must be an integer greater than 0"
+
         start_index, end_index = index_range(page, page_size)
         dataset = self.dataset()
+
         if end_index > len(dataset):
             return []
         else:
