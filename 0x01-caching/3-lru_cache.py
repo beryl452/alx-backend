@@ -15,7 +15,8 @@ class LRUCache(BaseCaching):
     Methods:
         __init__(): Initializes an instance of LRUCache.
         put(key, item): Adds an item to the cache.
-        get(key): Retrieves the value associated with the given key from the cache.
+        get(key): Retrieves the value associated with
+        the given key from the cache.
     """
 
     def __init__(self):
