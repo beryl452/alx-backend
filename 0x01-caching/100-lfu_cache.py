@@ -51,7 +51,6 @@ class LFUCache(BaseCaching):
             None
 
         """
-
         if key is None or item is None:
             return
 
@@ -60,15 +59,10 @@ class LFUCache(BaseCaching):
             self.timestamps.move_to_end(key)
         else:
             if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
-                lfu_key = min(self.frequencies, key=self.frequencies.get)
-                if (self.frequencies[lfu_key]
-                        == [self.frequencies[key]
-                            for key in self.frequencies]):
-                    lfu_key = self.timestamps.popitem(last=False)[0]
+                lfu_key = self.timestamps.popitem(last=False)[0]
                 print("DISCARD:", lfu_key)
                 del self.cache_data[lfu_key]
                 del self.frequencies[lfu_key]
-                del self.timestamps[lfu_key]
 
             self.frequencies[key] = 1
             self.timestamps[key] = time.time()
