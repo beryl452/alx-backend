@@ -47,8 +47,8 @@ class LFUCache(BaseCaching):
             None
         """
         if key and item:
-            if len(self.cache_data) >= BaseCaching.MAX_ITEMS
-            and key not in self.cache_data.keys():
+            if (len(self.cache_data) >= BaseCaching.MAX_ITEMS and
+                    key not in self.cache_data.keys()):
                 min_freq = min(self._frequency.values())
                 keys = [k for k, v in self._frequency.items() if v == min_freq]
                 if len(keys) == 1:
@@ -89,4 +89,3 @@ class LFUCache(BaseCaching):
             self.cache_data[key] = value
             return value
         return None
-
