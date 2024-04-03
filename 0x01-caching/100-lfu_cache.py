@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 """5. LFU Caching
 """
+from collections import OrderedDict
+import time
 
 
 BaseCaching = __import__('base_caching').BaseCaching
@@ -10,82 +12,88 @@ class LFUCache(BaseCaching):
     """
     Least Frequently Used (LFU) Cache implementation.
 
-    Inherits from BaseCaching class.
+    This class inherits from the BaseCaching class and provides methods for
+    putting items into the cache and retrieving items from the cache based on
+    the LFU eviction policy.
 
     Attributes:
-        _frequency (dict): A dictionary to keep track
-            of the frequency of each key.
+        frequencies (dict): A dictionary to keep track
+            of the frequencies of cache items.
+        timestamps (OrderedDict): An ordered dictionary to keep track of
+            the timestamps of cache items.
 
     Methods:
-        put(key, item): Adds an item to the cache.
-        get(key): Retrieves the value associated
-            with the given key from the cache.
+        put(key, item): Puts an item into the cache with the specified key.
+        get(key): Retrieves the item from the cache with the specified key.
+
     """
 
     def __init__(self):
-        """
-        Initializes an instance of LFUCache.
-
-        Args:
-            None
-
-        Returns:
-            None
-        """
         super().__init__()
-        self._frequency = {}
+        self.frequencies = {}
+        self.timestamps = OrderedDict()
 
     def put(self, key, item):
         """
-        Adds an item to the cache.
+        Puts an item into the cache with the specified key.
+
+        If the key already exists in the cache,
+            its frequency is incremented and
+        its timestamp is updated. If the cache is full,
+            the least frequently used
+        item is evicted based on the LFU eviction policy.
 
         Args:
-            key (hashable): The key to associate with the item.
-            item: The item to be added to the cache.
+            key: The key of the item to be put into the cache.
+            item: The item to be put into the cache.
 
         Returns:
             None
+
         """
-        if key and item:
-            if (len(self.cache_data) >= BaseCaching.MAX_ITEMS and
-                    key not in self.cache_data.keys()):
-                min_freq = min(self._frequency.values())
-                keys = [k for k, v in self._frequency.items() if v == min_freq]
-                if len(keys) == 1:
-                    del self.cache_data[keys[0]]
-                    del self._frequency[keys[0]]
-                else:
-                    min_key = None
-                    for k in self.cache_data.keys():
-                        if min_key is None and k in keys:
-                            min_key = k
-                            break
-                    if min_key:
-                        del self.cache_data[min_key]
-                        del self._frequency[min_key]
-                        print(f"DISCARD: {min_key}")
-            if key in self.cache_data.keys():
-                del self.cache_data[key]
-                self._frequency[key] += 1
-            else:
-                self._frequency[key] = 1
-            self.cache_data[key] = item
+
+        if key is None or item is None:
+            return
+
+        if key in self.cache_data:
+            self.frequencies[key] += 1
+            self.timestamps.move_to_end(key)
+        else:
+            if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
+                lfu_key = min(self.frequencies, key=self.frequencies.get)
+                if (self.frequencies[lfu_key]
+                        == [self.frequencies[key]
+                            for key in self.frequencies]):
+                    lfu_key = self.timestamps.popitem(last=False)[0]
+                print("DISCARD:", lfu_key)
+                del self.cache_data[lfu_key]
+                del self.frequencies[lfu_key]
+                del self.timestamps[lfu_key]
+
+            self.frequencies[key] = 1
+            self.timestamps[key] = time.time()
+
+        self.cache_data[key] = item
 
     def get(self, key):
         """
-        Retrieves the value associated with the given key from the cache.
+        Retrieves the item from the cache with the specified key.
+
+        If the key does not exist in the cache,
+        None is returned. Otherwise, the
+        item is returned and its timestamp is updated.
 
         Args:
-            key (hashable): The key to look up in the cache.
+            key: The key of the item to be retrieved from the cache.
 
         Returns:
-            The value associated with the key,
-            or None if the key is not found in the cache.
+            The item associated with the specified key,
+            or None if the key does not exist in the cache.
+
         """
-        if key in self.cache_data.keys():
-            self._frequency[key] += 1
-            value = self.cache_data[key]
-            del self.cache_data[key]
-            self.cache_data[key] = value
-            return value
-        return None
+
+        if key is None or key not in self.cache_data:
+            return None
+
+        self.timestamps.move_to_end(key)
+        return self.cache_data[key]
