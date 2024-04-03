@@ -7,11 +7,24 @@ BaseCaching = __import__('base_caching').BaseCaching
 
 
 class LFUCache(BaseCaching):
-    _frequency = {}
+    """
+    Least Frequently Used (LFU) Cache implementation.
+
+    Inherits from BaseCaching class.
+
+    Attributes:
+        _frequency (dict): A dictionary to keep track
+            of the frequency of each key.
+
+    Methods:
+        put(key, item): Adds an item to the cache.
+        get(key): Retrieves the value associated
+            with the given key from the cache.
+    """
 
     def __init__(self):
         """
-        Initializes an instance of MRUCache.
+        Initializes an instance of LFUCache.
 
         Args:
             None
@@ -20,6 +33,7 @@ class LFUCache(BaseCaching):
             None
         """
         super().__init__()
+        self._frequency = {}
 
     def put(self, key, item):
         """
@@ -33,7 +47,8 @@ class LFUCache(BaseCaching):
             None
         """
         if key and item:
-            if len(self.cache_data) >= BaseCaching.MAX_ITEMS and key not in self.cache_data.keys():
+            if len(self.cache_data) >= BaseCaching.MAX_ITEMS
+            and key not in self.cache_data.keys():
                 min_freq = min(self._frequency.values())
                 keys = [k for k, v in self._frequency.items() if v == min_freq]
                 if len(keys) == 1:
@@ -55,7 +70,6 @@ class LFUCache(BaseCaching):
             else:
                 self._frequency[key] = 1
             self.cache_data[key] = item
-        
 
     def get(self, key):
         """
@@ -74,4 +88,5 @@ class LFUCache(BaseCaching):
             del self.cache_data[key]
             self.cache_data[key] = value
             return value
-        return None       
+        return None
+
